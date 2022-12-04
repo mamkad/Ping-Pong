@@ -1,0 +1,2 @@
+﻿  main.cpp
+C:\Users\mamkad\source\repos\PingPong\PingPong\main.cpp(2,10): fatal  error C1083: Не удается открыть файл включение: SFML/Graphics.hpp: No such file or directory,
