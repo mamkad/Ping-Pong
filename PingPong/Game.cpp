@@ -1,11 +1,25 @@
 #include "Game.h"
 
-#include <iostream>
-#include <fstream>
+#include <stdexcept>
 
-Game::Game() : GraphicBase(nullptr)
+using std::make_shared;
+
+Game::Game(string const& cfgFileName) : GraphicBase(nullptr, 1)
 {
 	std::cout << "Game()\n";
+
+	try {
+		ifstream cfgFile(cfgFileName);
+
+		if (!cfgFile) {
+			throw invalid_argument("Error in init from file: " + cfgFileName);
+		}
+
+		Init(cfgFile);
+	}
+	catch (...) {
+		throw;
+	}
 }
 
 Game::~Game()
@@ -13,106 +27,130 @@ Game::~Game()
 	std::cout << "~Game()\n";
 }
 
-void Game::Update(float time)
-{
-	ball_->Update(time);
-	player_->Update(time);
-}
-
-void Game::Draw()
-{
-	windowPtr_->draw(backGround_);
-	ball_->Draw();
-	player_->Draw();
-}
-
 int Game::Run()
 {
 	Clock clock;
 	float time = 0.0f;
 
-	bool isPause = true;
-
-	while (windowPtr_->isOpen()) {
+	while (windowPtr->isOpen()) {
 		Event event;
 
 		time = float(clock.getElapsedTime().asSeconds());
 		clock.restart();
 
-		while (windowPtr_->pollEvent(event)) {
-			switch (event.type) {
-				case Event::Closed: {
-					windowPtr_->close();
-					break;
-				}
-				case Event::KeyPressed: {
-					if (event.key.code == sf::Keyboard::Escape) {
-						isPause = isPause == true ? false : true;
-					}
-					player_->OnControl(event);
-					break;
-				}
-				default:
-					break;
-			}
+		while (windowPtr->pollEvent(event)) {
+			Control(event);
 		}
 
-		if (!isPause) {
+		if (isActive) {
 			Update(time);
 		}
 
-		windowPtr_->clear();
+		windowPtr->clear();
 		Draw();
-		windowPtr_->display();
+		windowPtr->display();
 	}
 
 	return 0;
 }
 
-bool Game::Init(string const& cfgFileName)
+void Game::Control(Event const& event)
 {
-	std::ifstream fIn(cfgFileName);
+	Keyboard::Key key = event.key.code;
 
-	// if file is not open
-	if (!fIn) {
-		//cout << "\n\tFile not found: " + fnamein + '\n';
-		return false;
+	switch (event.type) {
+		case Event::Closed: {
+			windowPtr->close();
+			break;
+		}
+		case Event::KeyPressed: {
+			if (key == Keyboard::Escape) {
+				isActive = isActive ? false : true;
+				break;
+			}
+			break;
+		}
+		case Event::KeyReleased: {
+			break;
+		}
+		default:
+			break;
 	}
 
+	ball->Control(event);
+	player->Control(event);
+}
+
+void Game::Update(float time)
+{
+	float ballX = ball->GetPos().x;
+	
+	if (ballX < 0) {
+		ball->SetPos(centralPos);
+		ball->SetDirs(1.0f, 1.0f);
+		player->AddPoints();
+		std::cout << player->Points() << '\n';
+	}
+	else if (ballX > windowPtr->getSize().x) {
+		ball->SetPos(centralPos);
+		ball->SetDirs(-1.0f, -1.0f);
+		bot->AddPoints();
+	}
+	else {
+		if (player->Contain(ball->GetPos())) {
+			ball->SetDirs(1.0f);
+		}
+		else if (bot->Contain(ball->GetPos())) {
+			ball->SetDirs(-1.0f);
+		}
+	}
+
+	ball->Update(time);
+	player->Update(time);
+	bot->Update(time);
+}
+
+void Game::Draw()
+{
+	// back
+	windowPtr->draw(backGround);
+	// graphic objects
+	ball->Draw();
+	player->Draw();
+	bot->Draw();
+}
+
+
+void Game::Init(ifstream& cfgFile)
+{
 	// window
 	unsigned W, H; 
 	string title;
 	unsigned r, g, b, fLimit;
 
-	if ( !(fIn >> W >> H >> title >> r >> g >> b >> fLimit) ) {
-		//cout << "\n\tUnable to convert characters to rows and columns\n";
-		return false;
+	if ( !(cfgFile >> W >> H >> title >> r >> g >> b >> fLimit) ) {
+		throw invalid_argument("Error of init Game class");
 	}
 
-	windowPtr_ = std::make_shared<RenderWindow>(VideoMode(W, H), title);
-	windowPtr_->setFramerateLimit(fLimit);
+	windowPtr = make_shared<RenderWindow>(VideoMode(W, H), title);
+	windowPtr->setFramerateLimit(fLimit);
+	centralPos = { windowPtr->getSize().x / 2.0f, windowPtr->getSize().y / 2.0f };
 
 	// background
-	backGround_.setSize({ (float)W, (float)H });
-	backGround_.setFillColor(Color(r, g, b));
+	backGround.setSize({ (float)W, (float)H });
+	backGround.setFillColor(Color(r, g, b));
 
 	// ball
-	float radius, ballX, ballY;
-	unsigned bR, bG, bB, bOR, bOG, bOB;
-	float thicknes;
-
-	if (!(fIn >> radius >> ballX >> ballY >> bR >> bG >> bB >> thicknes >> bOR >> bOG >> bOB)) {
-		//cout << "\n\tUnable to convert characters to rows and columns\n";
-		return false;
-	}
-
-	ball_ = std::make_shared<Ball>(windowPtr_);
-	ball_->Setup(radius, Vector2f(ballX, ballY), Color(bR, bG, bB), thicknes, Color(bOR, bOG, bOB));
-
+	ball = make_shared<Ball>(windowPtr, 2);
+	ball->Init(cfgFile);
+	
 	// player panel
-	player_ = std::make_shared<Panel>(windowPtr_);
-	player_->Setup(Vector2f(20, 120), Vector2f(30, 250), Color(bR, bG, bB), 1.2f, Color(bOR, bOG, bOB));
+	player = make_shared<PlayerPanel>(windowPtr, 3);
+	player->Init(cfgFile);
 
-	fIn.close();
-	return true;
+	// bot panel
+	bot = make_shared<BotPanel>(windowPtr, 4);
+	bot->Init(cfgFile);
+
+	cfgFile.close();
 }

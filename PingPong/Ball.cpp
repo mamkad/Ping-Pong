@@ -1,6 +1,6 @@
 #include "Ball.h"
 
-Ball::Ball(shared_ptr<RenderWindow> const& windowPtr) : GraphicBase(windowPtr)
+Ball::Ball(shared_ptr<RenderWindow> const& windowPtr, unsigned id) : GraphicBase(windowPtr, id)
 {
 	std::cout << "Ball()\n";
 }
@@ -10,39 +10,73 @@ Ball::~Ball()
 	std::cout << "~Ball()\n";
 }
 
-void Ball::Setup(float radius, Vector2f const& startPos, Color const& clr, float thick, Color const& thicClr)
+void Ball::Init(ifstream& cfgFile)
 {
-	circle_.setPointCount(500);
-	circle_.setRadius(radius);
-	circle_.setOrigin(radius, radius);
-	circle_.setPosition(startPos);
-	circle_.setFillColor(clr);
-	circle_.setOutlineThickness(thick);
-	circle_.setOutlineColor(thicClr);
+	float radius, ballX, ballY;
+	unsigned bR, bG, bB, bOR, bOG, bOB;
+	float thicknes, pintCount;
+
+	if (!(cfgFile >> radius >> pintCount >> ballX >> ballY
+		>> bR >> bG >> bB >> thicknes >> bOR >> bOG >> bOB
+			>> points >> dP >> velocity >> dirX >> dirY)) {
+		throw invalid_argument("Error of init Ball class");
+	}
+	circle.setPointCount(500);
+	circle.setRadius(radius);
+	circle.setOrigin(radius, radius);
+	circle.setPosition(ballX, ballY);
+	circle.setFillColor(Color(bR, bG, bB));
+	circle.setOutlineThickness(thicknes);
+	circle.setOutlineColor(Color(bOR, bOG, bOB));
+}
+
+void Ball::Control(Event const& event)
+{
 }
 
 void Ball::Update(float time)
 {
-	if (circle_.getPosition().y + circle_.getRadius() >= windowPtr_->getSize().y) {
+	float y = circle.getPosition().y;
+
+	if (y + circle.getRadius() > windowPtr->getSize().y) {
 		dirY = -1.0f;
 	}
-	else if (circle_.getPosition().y - circle_.getRadius() <= 0) {
+	else if (y - circle.getRadius() < 0.0f) {
 		dirY = 1.0f;
 	}
-	else if (circle_.getPosition().x + circle_.getRadius() >= windowPtr_->getSize().x) {
-		dirX = -1.0f;
-	}
-	else if (circle_.getPosition().x - circle_.getRadius() <= 0) {
-		dirX = 1.0f;
-	}
+	
+	float dx = velocity * dirX * time, dy = velocity * dirY * time;
 
-	dx = velocity * dirX * time;
-	dy = velocity * dirY * time;
-
-	circle_.move({ dx, dy });
+	circle.move({ dx, dy });
 }
 
 void Ball::Draw()
 {
-	windowPtr_->draw(circle_);
+	windowPtr->draw(circle);
+}
+
+bool Ball::Contain(Vector2f const& pos) const noexcept
+{
+	return (fabs(circle.getPosition().x - pos.x) < circle.getRadius()) && (fabs(circle.getPosition().y - pos.y) < circle.getRadius());
+}
+
+void Ball::SetPos(Vector2f const& pos)
+{
+	circle.setPosition(pos);
+}
+
+Vector2f Ball::GetPos() const noexcept
+{
+	//float angle = cosf(45 * 3.14f / 180.0f);
+	return (dirX > 0.0f) ? Vector2f(circle.getPosition().x + circle.getRadius(), circle.getPosition().y  ) : Vector2f(circle.getPosition().x - circle.getRadius(), circle.getPosition().y * cos(45));
+	//return { circle.getPosition().x + circle.getRadius() * dirX * angle , circle.getPosition().y + circle.getRadius() * dirY * angle };
+}
+
+void Ball::SetDirs(float dirX, float dirY)
+{
+	this->dirX = dirX;
+
+	if (dirY > 0) {
+		this->dirY = dirY;
+	}
 }

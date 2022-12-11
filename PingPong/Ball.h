@@ -1,21 +1,35 @@
 #pragma once
 
 #include "GraphicBase.h"
+#include "GameObjectBase.h"
+
 #include <iostream>
 
-class Ball final : public GraphicBase
+class Ball final : public GraphicBase, public GameObjectBase
 {
 private:
-	CircleShape circle_;
-	float dx = 0.0f, dy = 0.0f, velocity = 200.0f;
-	float dirX = 1.0f, dirY = 1.0f;
-
+	// graphic object
+	CircleShape circle;
+	
 public:
-	Ball(shared_ptr<RenderWindow> const& windowPtr);
+	Ball(shared_ptr<RenderWindow> const& windowPtr, unsigned id);
+
+	Ball(Ball const&) = delete;
+	Ball(Ball&&)      = delete;
+	Ball& operator= (Ball const&) = delete;
+	Ball& operator= (Ball&&)      = delete;
+
 	~Ball();
 
-	void Setup(float radius, Vector2f const& startPos, Color const& clr, float thick, Color const& thicClr);
+	void Init(ifstream& cfgFile) override;
+	void Control(Event const& event) override;
+	void Update(float time)          override;
+	void Draw()			             override;
 
-	void Update(float time) override;
-	void Draw() override;
+	bool Contain(Vector2f const& pos) const noexcept override;
+	Vector2f GetPos()			      const noexcept override;
+
+	void SetPos(Vector2f const& pos);
+
+	void SetDirs(float dirX, float dirY = 0.0f);
 };

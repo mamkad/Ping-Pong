@@ -131,16 +131,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Ball.cpp" />
+    <ClCompile Include="BotPanel.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameObjectBase.cpp" />
     <ClCompile Include="GraphicBase.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Panel.cpp" />
+    <ClCompile Include="PlayerPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ball.h" />
+    <ClInclude Include="BotPanel.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameObjectBase.h" />
     <ClInclude Include="GraphicBase.h" />
-    <ClInclude Include="Panel.h" />
+    <ClInclude Include="Menu.h" />
+    <ClInclude Include="PlayerPanel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
