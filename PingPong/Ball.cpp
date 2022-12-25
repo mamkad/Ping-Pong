@@ -2,12 +2,12 @@
 
 Ball::Ball(shared_ptr<RenderWindow> const& windowPtr, unsigned id) : GraphicBase(windowPtr, id)
 {
-	std::cout << "Ball()\n";
+	//std::cout << "Ball()\n";
 }
 
 Ball::~Ball()
 {
-	std::cout << "~Ball()\n";
+	//std::cout << "~Ball()\n";
 }
 
 void Ball::Init(ifstream& cfgFile)
@@ -16,9 +16,11 @@ void Ball::Init(ifstream& cfgFile)
 	unsigned bR, bG, bB, bOR, bOG, bOB;
 	float thicknes, pintCount;
 
-	if (!(cfgFile >> radius >> pintCount >> ballX >> ballY
+	if (!(cfgFile >> name >> radius >> pintCount >> ballX >> ballY
 		>> bR >> bG >> bB >> thicknes >> bOR >> bOG >> bOB
-			>> points >> dP >> velocity >> dirX >> dirY)) {
+			>> points >> velocity >> dirX >> dirY
+				>> countOfReflectionsThatIncreaseVelocity >> dVelocity)) {
+
 		throw invalid_argument("Error of init Ball class");
 	}
 	circle.setPointCount(500);
@@ -28,6 +30,8 @@ void Ball::Init(ifstream& cfgFile)
 	circle.setFillColor(Color(bR, bG, bB));
 	circle.setOutlineThickness(thicknes);
 	circle.setOutlineColor(Color(bOR, bOG, bOB));
+
+	startVelocity = velocity;
 }
 
 void Ball::Control(Event const& event)
@@ -60,6 +64,7 @@ bool Ball::Contain(Vector2f const& pos) const noexcept
 	return (fabs(circle.getPosition().x - pos.x) < circle.getRadius()) && (fabs(circle.getPosition().y - pos.y) < circle.getRadius());
 }
 
+
 void Ball::SetPos(Vector2f const& pos)
 {
 	circle.setPosition(pos);
@@ -68,7 +73,7 @@ void Ball::SetPos(Vector2f const& pos)
 Vector2f Ball::GetPos() const noexcept
 {
 	//float angle = cosf(45 * 3.14f / 180.0f);
-	return (dirX > 0.0f) ? Vector2f(circle.getPosition().x + circle.getRadius(), circle.getPosition().y  ) : Vector2f(circle.getPosition().x - circle.getRadius(), circle.getPosition().y * cos(45));
+	return (dirX > 0.0f) ? Vector2f(circle.getPosition().x + circle.getRadius(), circle.getPosition().y  ) : Vector2f(circle.getPosition().x - circle.getRadius(), circle.getPosition().y);
 	//return { circle.getPosition().x + circle.getRadius() * dirX * angle , circle.getPosition().y + circle.getRadius() * dirY * angle };
 }
 
@@ -80,3 +85,25 @@ void Ball::SetDirs(float dirX, float dirY)
 		this->dirY = dirY;
 	}
 }
+
+unsigned Ball::GetPoints() const noexcept
+{
+	return points;
+}
+
+void Ball::IncPoints(unsigned points) noexcept
+{
+	this->points += points;
+
+	if (!(points % countOfReflectionsThatIncreaseVelocity)) {
+		velocity += dVelocity;
+	}
+}
+
+void Ball::ResetPoints() noexcept
+{
+	points = 0;
+	velocity = startVelocity;
+}
+
+

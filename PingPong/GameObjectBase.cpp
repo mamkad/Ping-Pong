@@ -1,24 +1,15 @@
 #include "GameObjectBase.h"
-#include <iostream>
+
+#include <random>
 
 GameObjectBase::GameObjectBase()
 {
-	std::cout << "GameObjectBase()\n";
+	//std::cout << "GameObjectBase()\n";
 }
 
 GameObjectBase::~GameObjectBase()
 {
-	std::cout << "~GameObjectBase()\n";
-}
-
-unsigned GameObjectBase::Points() const noexcept
-{
-	return points;
-}
-
-void GameObjectBase::AddPoints() noexcept
-{
-	points += dP;
+	//std::cout << "~GameObjectBase()\n";
 }
 
 void GameObjectBase::SetName(string const& name)
@@ -29,4 +20,10 @@ void GameObjectBase::SetName(string const& name)
 string const& GameObjectBase::GetName() const noexcept
 {
 	return name;
+}
+
+float GameObjectBase::GetRandomNumber() const noexcept
+{
+	srand((unsigned)time(0));
+	return float(rand() % 200) + 50.0f;
 }

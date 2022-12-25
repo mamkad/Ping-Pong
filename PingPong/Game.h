@@ -4,45 +4,29 @@
 #include "Ball.h"
 #include "PlayerPanel.h"
 #include "BotPanel.h"
-
-class GameLogicParams final
-{
-private:
-	bool isActive_ = false;
-	unsigned addedPoints = 25, maxPoints = 200;
-	unsigned player1Points = 0, botPoints = 0;
-
-public:
-	void SetActive(bool mode) noexcept;
-	bool IsActive()     const noexcept;
-
-	void AddPointsToPlayer()         noexcept;
-	unsigned GetPlayerPoints() const noexcept;
-
-	void AddPointsToBot()         noexcept;
-	unsigned GetBotPoints() const noexcept;
-
-	bool IsOver() const noexcept;
-
-	void Save();
-	void Read();
-};
+#include "Info.h"
 
 class Game final : public GraphicBase
 {
 private:
 	// 
 	RectangleShape			backGround;
+
 	// game objects
-	shared_ptr<Ball>		ball   = nullptr;
-	shared_ptr<PlayerPanel> player = nullptr;
-	shared_ptr<BotPanel>    bot    = nullptr;
+	shared_ptr<Ball>		ball      = nullptr;
+	shared_ptr<PlayerPanel> player    = nullptr;
+	shared_ptr<BotPanel>    bot       = nullptr;
+	shared_ptr<Info>		infoPanel = nullptr;
+
 	// game params
 	Vector2f centralPos;
+
+	unsigned dPoints = 0, maxPoints = 0;
+
 	bool isActive = false;
 
 public:
-	Game(string const& cfgFileName);
+	Game(string const& cfgFileName, string const& logFileName);
 
 	Game(Game const&) = delete;
 	Game(Game&&)      = delete;

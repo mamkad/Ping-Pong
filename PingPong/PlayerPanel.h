@@ -3,8 +3,6 @@
 #include "GraphicBase.h"
 #include "GameObjectBase.h"
 
-#include <iostream>
-
 class PlayerPanel : public GraphicBase, public GameObjectBase
 {
 protected:
@@ -31,4 +29,8 @@ public:
 
 	bool Contain(Vector2f const& pos) const noexcept override;
 	Vector2f GetPos()				  const noexcept override;
+
+	unsigned GetPoints()      const noexcept override;
+	void IncPoints(unsigned points) noexcept override;
+	void ResetPoints()			    noexcept override;
 };

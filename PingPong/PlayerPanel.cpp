@@ -2,12 +2,12 @@
 
 PlayerPanel::PlayerPanel(shared_ptr<RenderWindow> const& windowPtr, unsigned id) : GraphicBase(windowPtr, id)
 {
-	std::cout << "PlayerPanel()\n";
+	//std::cout << "PlayerPanel()\n";
 }
 
 PlayerPanel::~PlayerPanel()
 {
-	std::cout << "~PlayerPanel()\n";
+	//std::cout << "~PlayerPanel()\n";
 }
 
 void PlayerPanel::Init(ifstream& cfgFile)
@@ -89,4 +89,19 @@ bool PlayerPanel::Contain(Vector2f const& pos) const noexcept
 Vector2f PlayerPanel::GetPos() const noexcept
 {
 	return line.getPosition();
+}
+
+unsigned PlayerPanel::GetPoints() const noexcept
+{
+	return points;
+}
+
+void PlayerPanel::IncPoints(unsigned points) noexcept
+{
+	this->points += points;
+}
+
+void PlayerPanel::ResetPoints() noexcept
+{
+	points = 0;
 }
